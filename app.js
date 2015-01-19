@@ -1,8 +1,12 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var Account = require('./lib/Account');
-var LocalStrategy = require('passport-local').Strategy;
 var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+var BearerStrategy = require('passport-http-bearer').Strategy;
+var Firebase = require('firebase');
+
+var Account = require('./lib/Account');
+var config = require('./config');
 
 var app = express();
 
@@ -21,7 +25,13 @@ passport.use(new LocalStrategy({ usernameField: 'email'}, function(username, pas
         return done(null, acc);
     });
 }));
+passport.use(new BearerStrategy(function(token, done) {
+    var acc = Account.fromToken(token);
+    if (!acc) return done(null, false);
+    return done(null, acc);
+}));
 app.use(passport.initialize());
+var forceBearerAuth = passport.authenticate('bearer', { session: false });
 
 app.get('/access_token', function(req, res, next) {
     passport.authenticate('local', function(err, user, info) {
@@ -43,6 +53,20 @@ app.post('/accounts', function(req, res) {
         res.status(201).end();
     });
 });
+
+app.post('/contacts', forceBearerAuth, function(req, res) {
+    var contactData = req.body;
+    contactData.owner = req.user.data.email;
+    var contactsDb = new Firebase(config.contactsDb);
+    var newContact = contactsDb.push();
+    newContact.set(contactData, function() {
+    res
+        .header('location', newContact.toString())
+        .status(201)
+        .end();
+        
+    });
+})
 
 var writeError = function(res, errorType, errorDescription, statusCode) {
     writeContent(res, {type: errorType, message: errorDescription}, statusCode || 400);

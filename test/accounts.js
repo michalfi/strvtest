@@ -5,7 +5,6 @@ var request = require('supertest'),
     Account = require('../lib/Account');
     
 describe('POST /accounts', function() {
-
     var testAccount = new Account({email: 'joe@example.com', password: 'secret'});
     before(function addTestingAccount(done) {
         testAccount.register(done);

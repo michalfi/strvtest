@@ -13,10 +13,12 @@
     "bcrypt": "^0.8.1",
     "body-parser": "^1.10.1",
     "express": "^4.11.0",
+    "firebase": "^2.1.1",
     "jwt-simple": "^0.2.0",
     "level": "^0.18.0",
     "mocha": "^2.1.0",
     "passport": "^0.2.1",
+    "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
     "supertest": "^0.15.0",
     "validator": "^3.27.0"
