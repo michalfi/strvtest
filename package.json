@@ -4,12 +4,19 @@
   "description": "STRV dev test",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "start": "node server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.11.0"
+    "body-parser": "^1.10.1",
+    "express": "^4.11.0",
+    "mocha": "^2.1.0",
+    "supertest": "^0.15.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/michalfi/strvtest"
   }
 }
