@@ -5,9 +5,13 @@ node.js and express.js.
 
 Author: Michal Fiedler
 
-Changes
+Spec Changes
 --------
-Token parameter name for the `contacts` resource was changed to `access_token`, because that's what RFC6750 requires (http://tools.ietf.org/html/rfc6750#section-2.2).
+* Token parameter name for the `contacts` resource was changed to `access_token`, because that's what RFC6750 requires (http://tools.ietf.org/html/rfc6750#section-2.2).
+
+Notes
+-------
+* Firebase was left unsecured. For real project, I'd configure it so that the clients could use the same token as for the backend and be restricted to their contacts only; documentation suggests it's possible.
 
 API
 =======
@@ -105,6 +109,7 @@ HTTP/1.1 201 Created
 
 Upload a photo
 --------
+Accepts one photo for the given contact and uploads it to Azure storage.
 
 ### Request
 
@@ -118,7 +123,6 @@ Content-Type: multipart/form-data
 ~~~HTTP
 HTTP/1.1 201 Created
 ~~~
-
 
 Error format
 ============

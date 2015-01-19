@@ -4,6 +4,8 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var BearerStrategy = require('passport-http-bearer').Strategy;
 var Firebase = require('firebase');
+var busboy = require('connect-busboy');
+var azure = require('azure-storage');
 
 var Account = require('./lib/Account');
 var config = require('./config');
@@ -11,6 +13,7 @@ var config = require('./config');
 var app = express();
 
 app.use(bodyParser.json());
+app.use(busboy());
 
 app.get('/ping', function (req, res) {
 	res.send('pong');
@@ -64,9 +67,28 @@ app.post('/contacts', forceBearerAuth, function(req, res) {
         .header('location', newContact.toString())
         .status(201)
         .end();
-        
     });
-})
+});
+
+app.post('/photos', forceBearerAuth, function(req, res) {
+    if (!req.busboy) return writeError(res, 'MultipartExpected', 'Only multipart/form-data request allowed');
+    var contact = req.query['contactId'];
+    if (!contact) return writeError(res, 'ContactIdMissing', 'ContactId is required');
+    var ignore = false;
+    req.busboy.on('file', function (fieldname, file, filename) {
+        if (ignore) return; // only accept 1 upload
+        ignore = true;
+        var blobSvc = azure.createBlobService(config.photoStorage.accountName, config.photoStorage.accountKey);
+        var blobStream = blobSvc.createWriteStreamToBlockBlob(config.photoStorage.container, contact, function(err, result, response) {
+            if (err) return writeError(res, 'InternalError', 'Photo storage error', 500);
+            res
+                .header('location', blobSvc.getUrl(config.photoStorage.container, contact))
+                .status(201).end();
+        });
+        file.pipe(blobStream);
+    });
+    req.pipe(req.busboy);
+});
 
 var writeError = function(res, errorType, errorDescription, statusCode) {
     writeContent(res, {type: errorType, message: errorDescription}, statusCode || 400);
